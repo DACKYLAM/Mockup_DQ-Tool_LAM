@@ -1,5 +1,6 @@
 import DataQualityApp from "@/DataQualityApp";
 import { Toaster } from "@/components/ui/sonner";
+import Footer from "@/Footer";
 
 export default function App() {
   return (
@@ -11,6 +12,7 @@ export default function App() {
         // Scomparsa dopo 2000ms (default = 4000)
         duration={2000}
       />
+      <Footer />
     </>
   );
 }

@@ -1,10 +1,12 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/geist";
+
 /* Dipendenza Tailwind */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
 
 :root {
   --text: black;
@@ -49,6 +51,7 @@
 }
 
 .container {
+  margin-bottom: 64px;
   width: 800px;
   @media (max-width: 1024px) {
     width: 500px;
@@ -219,18 +222,21 @@ svg {
 }
 
 #runDQ,
-#downloadResults {
-  margin-top: 16px;
-  width: 50%
+#runDQ_anonymous,
+#downloadResults,
+#shareResults,
+#closeModal {
+  margin-top: 12px;
+  width: 80%
 }
 
 .containerResults{
-  margin-top: 24px;
-  padding: 20px;
-  width: 75%;
+  margin-top: 12px;
+  padding: 8px;
   background-color: rgba(96, 200, 200, 0.4);
   border: 2px solid rgb(48, 100, 100, 0.6);
   border-radius: 16px;
+  position: relative;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -241,14 +247,31 @@ svg {
   }
 }
 
+.buttonX {
+  position: absolute;
+  top: 4px;
+  right: 8px;
+  color: var(--text);
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.buttonX:hover {
+  background-color: transparent;
+  transform: scale(1.05);
+}
+
 .titleResults {
   font-size: 20px;
+  margin: 4px 24px;
 }
 
 .infoResults {
   font-size: 16px;
   margin: 12px;
 }
+
 
 /* Dialog */
 [role="dialog"] {
@@ -281,6 +304,7 @@ svg {
   gap: 8px;
 }
 
+
 /* Select */
 [data-slot="select-trigger"],
 [data-slot="select-content"] {
@@ -288,6 +312,7 @@ svg {
   border: 2px solid rgb(120, 120, 120, 1);
   border-radius: 4px;
   width: 100%;
+  color: white;
 }
 [data-slot="select-trigger"]:hover,
 [data-slot="select-item"]:hover {
@@ -300,6 +325,7 @@ svg {
   min-width: 0;
   display: block;
 }
+
 
 /* Toast */
 [data-sonner-toast] {
@@ -325,4 +351,59 @@ svg {
 [data-type="error"] {
   background-color: rgb(128, 0, 0) !important;
   border-color: rgb(196, 0, 0) !important;
+}
+
+
+/* Footer */
+footer {
+  width: 100%;
+  z-index: 10;
+  position: fixed;
+  bottom: 0;
+  background-color: var(--bg);
+  color: var(--text);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  text-align: center;
+  font-size: 12px;
+  border-top: 1px solid var(--text);
+}
+
+
+/* Share Modal */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.7); /* aumenta/diminuisci l'opacità */
+  backdrop-filter: blur(2px); /* effetto vetro smerigliato */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+.shareModal {
+  background: var(--bg);
+  border: 2px solid var(--text);
+  border-radius: 12px;
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 360px;
+  position: relative;
+}
+.shareModalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  font-weight: 500;
+}
+.shareOption {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 12px;
+  margin-bottom: 8px;
 }

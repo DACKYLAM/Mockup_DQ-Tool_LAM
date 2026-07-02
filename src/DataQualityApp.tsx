@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { Eye, EyeOff, Pencil, Trash } from "lucide-react";
+import { Eye, EyeOff, Pencil, Trash, XCircle } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "sonner";
+import ShareModal from "@/ShareModal";
 
 
 export default function DataQualityApp() {
@@ -21,6 +22,7 @@ export default function DataQualityApp() {
   const [showTokenOld, setShowTokenOld] = useState(false);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
+  const [resultAnonymous, setResultAnonymous] = useState<any>(null);
   const [currentCenter, setCurrentCenter] = useState<centerType>();
   const [verifyToken, setVerifyToken] = useState("");
   const [newName, setNewName] = useState("");
@@ -30,6 +32,7 @@ export default function DataQualityApp() {
   const [openManage, setOpenManage] = useState(false);
   const [openModify, setOpenModify] = useState(false);
   const [openRemove, setOpenRemove] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   // Insieme dei centri
   const [centers, setCenters] = useState<{ name: string; url: string; token: string }[]>(() => {
@@ -187,13 +190,51 @@ export default function DataQualityApp() {
       // Creazione dei risultati
       const fakeResult = {
         centerName: center.name,
-        centerUrl: center.url,
+        extractionDate: new Date().toLocaleString("it-IT"),
         totalPatients: 100,
+        spanTime: "01/01/2023 - 31/12/2023",
         missingData: 5,
-        errors: ["Data non valida"],
-        generatedAt: new Date().toISOString(),
+        errors: ["No errors found"],
+        anonymous: false
       };
       setResult(fakeResult);
+    } catch(err: any) {
+      toast.error(err.message || "Errore durante l'operazione");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Run DataQuality anonymous
+  const handleRunDQ_anonymous = async (name?: string) => {
+    setLoading(true);
+    try {
+      const center = centers.find((c) => c.name === name);
+      // Dati mancanti
+      if (!selectedCenter || !token) {
+        throw new Error("Seleziona un centro e inserisci il token");
+      }
+      // Simulazione chiamata API
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // Centro non trovato
+      if (!center) {
+        throw new Error("Problemi nella ricerca del centro");
+      }
+      // Token inserito non corretto
+      if (token!==center.token) {
+        throw new Error("Token non corretto");
+      }
+      // Creazione dei risultati
+      const fakeResultAnonymous = {
+        centerName: center.name,
+        extractionDate: new Date().toLocaleString("it-IT"),
+        totalPatients: 100,
+        spanTime: "01/01/2023 - 31/12/2023",
+        missingData: 5,
+        errors: ["No errors found"],
+        anonymous: true
+      };
+      setResultAnonymous(fakeResultAnonymous);
     } catch(err: any) {
       toast.error(err.message || "Errore durante l'operazione");
     } finally {
@@ -216,6 +257,13 @@ export default function DataQualityApp() {
     URL.revokeObjectURL(url);
   };
 
+  // Condivisione dei risultati
+  function shareResult() {
+    if (!result) return;
+    // Implementazione della condivisione
+    setShowShareModal(true);
+  }
+
   return (
     <div className="container">
 
@@ -228,6 +276,7 @@ export default function DataQualityApp() {
           <Select
             value={selectedCenter}
             onValueChange={handleCenterChange}
+            disabled={loading}
           >
             <SelectTrigger>
               <SelectValue placeholder="Seleziona centro" />
@@ -303,37 +352,107 @@ export default function DataQualityApp() {
 
       {/* Bottone DQ */}
       <div className="raw">
-        <button
-          id="runDQ"
-          className="manageButton"
-          onClick={() => handleRunDQ(selectedCenter)}
-          disabled={loading}
-        >
-          "Esegui Data Quality"
-        </button>
+        <div className="partofRaw">
+          <button
+            id="runDQ"
+            className="manageButton"
+            onClick={() => handleRunDQ(selectedCenter)}
+            disabled={loading}
+          >
+            Esegui DQ
+          </button>
+        </div>
+        <div className="partofRaw">
+          <button
+            id="runDQ_anonymous"
+            className="manageButton"
+            onClick={() => handleRunDQ_anonymous(selectedCenter)}
+            disabled={loading}
+          >
+            DQ anonimizzata
+          </button>
+        </div>
       </div>
 
       {/* Successo */}
-      {result && (
-        <div className="raw">
-          <div className="containerResults">
-            <div className="titleResults">✅ &nbsp;&nbsp; <u>Analisi completata</u> &nbsp;&nbsp; ✅</div>
-            <ul className="infoResults">
-              <li className="scrollText"><b>Centro:</b> {result.centerName}</li>
-              <li className="scrollText"><b>Sito:</b> {result.centerUrl}</li>
-              <li className="scrollText"><b>Totale pazienti:</b> {result.totalPatients}</li>
-              <li className="scrollText"><b>Dati mancanti:</b> {result.missingData}</li>
-            </ul>
-            <button
-              id="downloadResults"
-              onClick={downloadResult}
-              className="manageButton"
-            >
-              Scarica risultati
-            </button>
-          </div>
+      <div className="raw">
+        <div className="partofRaw">
+          {result && (
+            <div className="containerResults">
+              <button
+                onClick={() => setResult(null)}
+                className="buttonX"
+              >
+                <XCircle size={24}/>
+              </button>
+              <div className="titleResults">✅ &nbsp; <u>Analisi completata</u> &nbsp; ✅</div>
+              <ul className="infoResults">
+                <li className="scrollText"><b>Centro:</b> {result.centerName}</li>
+                <li className="scrollText"><b>Data estrazione:</b> {result.extractionDate}</li>
+                <li className="scrollText"><b>Totale pazienti:</b> {result.totalPatients}</li>
+                <li className="scrollText"><b>Span time:</b> {result.spanTime}</li>
+              </ul>
+              <button
+                id="downloadResults"
+                onClick={downloadResult}
+                className="manageButton"
+                disabled={loading}
+              >
+                Scarica risultati
+              </button>
+              <button
+                id="shareResults"
+                onClick={shareResult}
+                className="manageButton"
+                disabled={loading}
+              >
+                Condividi risultati
+              </button>
+              {showShareModal && (
+                <ShareModal centerName={result.centerName} title="Condividi risultati" onClose={() => setShowShareModal(false)} />
+              )}
+            </div>
+          )}
         </div>
-      )}
+        <div className="partofRaw">
+          {resultAnonymous && (
+            <div className="containerResults">
+              <button
+                onClick={() => setResultAnonymous(null)}
+                className="buttonX"
+              >
+                <XCircle size={24}/>
+              </button>
+              <div className="titleResults">✅ &nbsp; <u>Analisi anonima</u> &nbsp; ✅</div>
+              <ul className="infoResults">
+                <li className="scrollText"><b>Centro:</b> {resultAnonymous.centerName}</li>
+                <li className="scrollText"><b>Data estrazione:</b> {resultAnonymous.extractionDate}</li>
+                <li className="scrollText"><b>Totale pazienti:</b> {resultAnonymous.totalPatients}</li>
+                <li className="scrollText"><b>Span time:</b> {resultAnonymous.spanTime}</li>
+              </ul>
+              <button
+                id="downloadResults"
+                onClick={downloadResult}
+                className="manageButton"
+                disabled={loading}
+              >
+                Scarica anonimi
+              </button>
+              <button
+                id="shareResults"
+                onClick={shareResult}
+                className="manageButton"
+                disabled={loading}
+              >
+                Condividi anonimi
+              </button>
+              {showShareModal && (
+                <ShareModal centerName={result.centerName} title="Condividi anonimi" onClose={() => setShowShareModal(false)} />
+              )}
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Dialog di Creazione centro */}
       <Dialog
